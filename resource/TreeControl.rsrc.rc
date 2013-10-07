@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -54,10 +52,10 @@ END
 
 IDD_DIALOG1 DIALOGEX 0, 0, 361, 306
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "SkyFS/BFS viewer"
+CAPTION "BFS viewer"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_TRACKSELECT | TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP | 0xc00,2,0,351,290,WS_EX_ACCEPTFILES
+    CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_TRACKSELECT | TVS_FULLROWSELECT | TVS_INFOTIP | TVS_SINGLEEXPAND | WS_BORDER | WS_HSCROLL | WS_TABSTOP,2,0,351,290,WS_EX_ACCEPTFILES
 END
 
 IDD_DIALOG2 DIALOGEX 0, 0, 184, 177
@@ -80,11 +78,8 @@ CAPTION "About"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,54,62,50,14
-    LTEXT           "SkyFS and BFS viewer 0.1",IDC_STATIC,7,7,113,11
-    LTEXT           "Created by Peter Speybrouck",IDC_STATIC,7,15,113,11
-    LTEXT           "More info and release notes:",IDC_STATIC,7,28,141,11
-    LTEXT           "Email: peter.speybrouck+skyfs@gmail.com",IDC_STATIC,7,50,141,11
-    LTEXT           "http://www.skyos.org/?q=node/622",IDC_STATIC,7,36,131,10
+    LTEXT           "BFS viewer 0.2",IDC_STATIC,7,7,113,11
+    LTEXT           "Created by Peter Speybrouck and updated by Fredrik Modéen",IDC_STATIC,7,15,134,21
 END
 
 
@@ -94,7 +89,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
@@ -121,18 +116,16 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Hebrew resources
+// Hebrew (Israel) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_HEB)
-#ifdef _WIN32
 LANGUAGE LANG_HEBREW, SUBLANG_DEFAULT
 #pragma code_page(1255)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -150,7 +143,7 @@ IDB_FILE                BITMAP                  "bitmap3.bmp"
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ICON1               ICON                    "icon1.ico"
-#endif    // Hebrew resources
+#endif    // Hebrew (Israel) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

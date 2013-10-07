@@ -13,6 +13,18 @@
 #include <sstream>
 using namespace std;
 
+char* GetLastErrorText(DWORD nErrorCode)
+{
+    char* msg;
+    // Ask Windows to prepare a standard message for a GetLastErrorText(GetLastError()) code:
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, nErrorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&msg, 0, NULL);
+    // Return the message
+    if (!msg)
+        return("Unknown error");
+    else
+        return(msg);
+}
+
 int countPhysicalDrives(){
 	int index=0;
 
@@ -143,33 +155,34 @@ int addChild(HWND hWnd,HTREEITEM* parent, char* t1,int icon,TreeData* td, std::o
 }
 int listPartitions(int disk, HWND h, HTREEITEM * node, TV_INSERTSTRUCT * s, std::ofstream *debug){
 	
-	int i,nRet,count=0;
+	int i, nRet, count = 0;
 	DWORD dwBytes;
 	PARTITION *PartitionTbl;
 	DRIVEPACKET stDrive;
 
 	BYTE szSector[512];
-	WORD wDrive =0;
+	WORD wDrive = 0;
 
 	char szTmpStr[64];
 	
-	DWORD dwMainPrevRelSector =0;
-	DWORD dwPrevRelSector =0;
+	DWORD dwMainPrevRelSector = 0;
+	DWORD dwPrevRelSector = 0;
 	char DRIVE[60];
-	sprintf(DRIVE,"\\\\.\\PhysicalDrive%i",disk);
-	HANDLE hDrive = CreateFile(DRIVE,GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE,0,OPEN_EXISTING,0,0);
+	sprintf(DRIVE, "\\\\.\\PhysicalDrive%i", disk);
+	*debug<<"DRIVE = " << DRIVE <<endl;
+	HANDLE hDrive = CreateFile(DRIVE, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
 	
 	if(hDrive == INVALID_HANDLE_VALUE){
-		printf("\tError: could not open disk %i (error %i)\n",disk,GetLastError());
-		*debug<<"Error: could not open disk "<<disk<<", error "<<GetLastError()<<endl;
+		printf("\tError: could not open disk %i (error %i)\n", disk, GetLastErrorText(GetLastError()));
+		*debug<<"Error: could not open disk "<<disk<<", error "<<GetLastErrorText(GetLastError())<<endl;
 		return GetLastError();
 	}
 
-	nRet = ReadFile(hDrive,szSector,512,&dwBytes,0);
+	nRet = ReadFile(hDrive, szSector, 512, &dwBytes, 0);
 	
 	if(!nRet){
-		printf("\tRead error: %i\n",GetLastError());
-		*debug<<"Read error: "<<GetLastError()<<endl;
+		printf("\tRead error: %i\n",GetLastErrorText(GetLastError()));
+		*debug<<"Read error: "<<GetLastErrorText(GetLastError())<<endl;
 		return GetLastError();
 	}
 
@@ -306,7 +319,7 @@ int listPartitions(int disk, HWND h, HTREEITEM * node, TV_INSERTSTRUCT * s, std:
 			
 			nRet = SetFilePointer(hDrive, n64Pos.LowPart,&n64Pos.HighPart, FILE_BEGIN);
 			if(nRet == 0xffffffff)
-				return GetLastError();;
+				return GetLastError();
 
 			dwBytes = 0;
 
