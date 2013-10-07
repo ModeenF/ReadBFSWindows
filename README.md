@@ -24,3 +24,10 @@ A lot of the BFS code is from the Haiku repository, adapted to make it compile a
 * Volume.h also contains a list with partition code definitions that are used to determine the partition type. Note that when I tested the application, I ran into a partition type that did not match what I would have expected, but it had the same structure, so it might have been some customized installation, don't remember. This is why you will see the PART_BFS1 definition.
 * supportDefs.h contains a bunch of code that is sometimes copy/pasted from various header files to avoid having to include the full header files which was causing more issues.
 * I'm guessing that there have been updates to the relevant haiku code, these have not been merged, but might improve performance.
+
+
+//Thoughts from Fredrik Modéen
+Files in the Haiku map are taken before 2007-05-22 (hrev21200)
+and after 2007-05-07  (hrev21054)
+
+I belive that it's. 2007-05-07 (hrev21054) från root/src/add-ons/kernel/file_systems/bfs

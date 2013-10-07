@@ -65,20 +65,20 @@ int listDir(HWND hWnd, HTREEITEM * node, TV_ITEM * tvi,ofstream* debug, vector<V
 		II = new Inode(v,td->inode);
 	else //we're reading the root directory
 		II = v->RootNode();
-	//skyfs_open_dir(v, v->RootNode(), &iter);
+	//bfs_open_dir(v, v->RootNode(), &iter);
 	if (II->IsDirectory()){ 
-		skyfs_open_dir(v, II, &iter);
+		bfs_open_dir(v, II, &iter);
 		*debug<<"after opendir...  inode: "<<td->inode<<endl;debug->flush();
-		// second arg of skyfs_read_dir is not used actually
-		//status_t ss = skyfs_read_dir(v, v->RootNode(), iter, &d,sizeof(dirent), &num);
-		status_t ss = skyfs_read_dir(v, II, iter, &d,sizeof(dirent), &num);
+		// second arg of bfs_read_dir is not used actually
+		//status_t ss = bfs_read_dir(v, v->RootNode(), iter, &d,sizeof(dirent), &num);
+		status_t ss = bfs_read_dir(v, II, iter, &d,sizeof(dirent), &num);
 		*debug<<"after readdir..."<<endl;debug->flush();
 		//TODO: this should be the '.' entry...
 		if (ss==B_OK && num>0) *debug<<d.d_name<<endl;
 		debug->flush();
 		while (ss==B_OK && num>0){
 			*debug<<"before readdir\n";debug->flush();
-			ss = skyfs_read_dir(v, v->RootNode(), iter, &d,sizeof(dirent), &num);
+			ss = bfs_read_dir(v, v->RootNode(), iter, &d,sizeof(dirent), &num);
 			if (ss==B_OK && num>0){ 
 				//debug<<"readdir success\n";debug.flush();
 				//printf("dirent: %s, len=%i, ino=%i\n",d.d_name,d.d_reclen,d.d_ino);
@@ -161,7 +161,7 @@ int listPartitions(int disk, HWND h, HTREEITEM * node, TV_INSERTSTRUCT * s, std:
 	
 	if(hDrive == INVALID_HANDLE_VALUE){
 		printf("\tError: could not open disk %i (error %i)\n",disk,GetLastError());
-		*debug<<"Error: could not open disk "<<disk<<", "<<GetLastError()<<endl;
+		*debug<<"Error: could not open disk "<<disk<<", error "<<GetLastError()<<endl;
 		return GetLastError();
 	}
 
@@ -227,7 +227,7 @@ int listPartitions(int disk, HWND h, HTREEITEM * node, TV_INSERTSTRUCT * s, std:
 				break;
 			case PART_SKYFS:
 			{
-				strcpy(szTmpStr, "SKYFS");	//skyfs partition
+				strcpy(szTmpStr, "SKYFS");	//bfs partition
 				s->hParent=*node;
 				s->item.mask=TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE| TVIF_PARAM;
 				s->item.lParam=0;
@@ -370,7 +370,7 @@ int listPartitions(int disk, HWND h, HTREEITEM * node, TV_INSERTSTRUCT * s, std:
 					break;
 				case PART_SKYFS:
 				{
-					strcpy(szTmpStr, "SKYFS");	//skyfs partition
+					strcpy(szTmpStr, "SKYFS");	//bfs partition
 					s->hParent=*node;
 					s->item.mask=TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE| TVIF_PARAM;
 					s->item.lParam=0;

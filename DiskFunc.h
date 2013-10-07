@@ -10,23 +10,21 @@
 #ifndef DISKFUNC_H
 #define DISKFUNC_H
 
-// skyfs include files
+// bfs include files
 #define _CRT_SECURE_NO_DEPRECATE 1
 #include <windows.h>
 #include <commctrl.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
+
 #include "resource\resource.h"
 
-
-#include "Volume.h"
-#include "Inode.h"
-#include "BPlusTree.h"
-#include "SkyfsInterface.h"
+#include "haiku/Volume.h"
+#include "haiku/Inode.h"
+#include "haiku/BPlusTree.h"
+#include "BFSInterface.h"
 #include "System.h"
-
-
 
 using namespace std;
 

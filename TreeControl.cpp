@@ -14,16 +14,18 @@
 //#include <stdlib.h>
 //#include <crtdbg.h>
 
+
 #include <windows.h>
 #include "resource\resource.h"
 #include <commctrl.h>
-
 #include <sstream>
 #include <iostream>
 #include <fstream>
 #include <vector>
+
 #include "DiskFunc.h"
 #include "SupportFunctions.h"
+
 // visual studio 2003
 // to fix LNK2005, linker options -> ignore libraries: LIBCD.lib ntdll.lib
 // then additional dependancies: comctl32.lib LIBCD.lib ntdll.lib
@@ -120,20 +122,20 @@ BOOL CALLBACK PropertiesDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 			Inode *I;
 			//void *f; // file_cookie
 			//file_cookie ff;
-			skyfs_read_vnode(v,td->inode,(void**)&I,true /*not used*/);
+			bfs_read_vnode(v,td->inode,(void**)&I,true /*not used*/);
 			//memcpy(&ff,f,sizeof(file_cookie));
 			void* attIt;
 			uint32 num;
 			dirent d;
 			struct attr_stat AttrStat;
 			attr_cookie* attCookie;
-			skyfs_open_attr_dir(v, I, &attIt);
-			status_t st = skyfs_read_attr_dir(v, I, attIt, &d,0, &num);
+			bfs_open_attr_dir(v, I, &attIt);
+			status_t st = bfs_read_attr_dir(v, I, attIt, &d,0, &num);
 			debug<<"attributes: \tName\t\tData\n"<<st<<num<<endl;	
 			int a=0;
 			while (st==0 && num>0){
-				skyfs_open_attr(v, I, d.d_name, O_RDONLY, &attCookie);
-				skyfs_read_attr_stat(v,I,attCookie,&AttrStat);
+				bfs_open_attr(v, I, d.d_name, O_RDONLY, &attCookie);
+				bfs_read_attr_stat(v,I,attCookie,&AttrStat);
 				unsigned char tupel[5];
 				tupel[0] = 0xff & (AttrStat.st_type >> 24);
 				tupel[1] = 0xff & (AttrStat.st_type >> 16);
@@ -147,7 +149,7 @@ BOOL CALLBACK PropertiesDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 				off_t leng=AttrStat.st_size; 
 				char * buff = (char *)calloc(leng,sizeof(char));
-				skyfs_read_attr(v, I, attCookie, 0,buff, &leng);
+				bfs_read_attr(v, I, attCookie, 0,buff, &leng);
 				debug<<"attribute: "<<d.d_name<<"  "<<"length: "<<leng<<" type: "<<tupel<<"  data: ";debug.flush();
 				ostringstream oss;
 				switch(AttrStat.st_type){
@@ -328,10 +330,10 @@ BOOL CALLBACK PropertiesDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 				}
 				string str=oss.str();
 				AddAttrInfo(d.d_name,(char*)str.c_str(),(char*)tupel,a++);
-				st = skyfs_read_attr_dir(v, I, attIt, &d,0, &num);
+				st = bfs_read_attr_dir(v, I, attIt, &d,0, &num);
 				debug<<str.c_str()<<"\n";debug.flush();
 			}
-			//skyfs_close(v,I,&ff);
+			//bfs_close(v,I,&ff);
 			
 			ostringstream oss;
 			oss << "Name: " << td->name;
@@ -411,7 +413,7 @@ BOOL CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			string strItem;
 			int cd = countPhysicalDrives();
 			debug<<"drives: "<< cd<<endl;
-			for (int i=0;i<cd;i++){
+			for (int i = 0;i < cd; i++) {
 				tvinsert.hParent=NULL;			// top most level no need handle
 				tvinsert.hInsertAfter=TVI_ROOT; // work as root level
 				tvinsert.item.mask=TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
@@ -431,7 +433,7 @@ BOOL CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				Root=Parent;
 				listPartitions(i, hWnd, &Parent, &tvinsert,&debug);
 			}	
-			// now, for each skyfs/bfs partition on all drives, list root dir
+			// now, for each bfs/bfs partition on all drives, list root dir
 			char Text[255]="";
 			HTREEITEM CurrentItem = TreeView_GetRoot(hTree);
 			tvi.mask=TVIF_TEXT|TVIF_PARAM|TVIF_CHILDREN;
@@ -573,14 +575,14 @@ BOOL CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 									tvi.lParam=reinterpret_cast<LPARAM>(td);
 									TreeView_SetItem(hWnd,&tvi);
 									// open rootdir:
-									skyfs_open_dir(v, v->RootNode(), &iter);
-									// second arg of skyfs_read_dir is not used actually
-									status_t ss = skyfs_read_dir(v, v->RootNode(), iter, &d,sizeof(dirent), &num);
+									bfs_open_dir(v, v->RootNode(), &iter);
+									// second arg of bfs_read_dir is not used actually
+									status_t ss = bfs_read_dir(v, v->RootNode(), iter, &d,sizeof(dirent), &num);
 									//TODO: this should be the '.' entry...
 									if (ss==B_OK && num>0) debug<<d.d_name<<endl;
 									while (ss==B_OK && num>0){
 										debug<<"before readdir\n";debug.flush();
-										ss = skyfs_read_dir(v, v->RootNode(), iter, &d,sizeof(dirent), &num);
+										ss = bfs_read_dir(v, v->RootNode(), iter, &d,sizeof(dirent), &num);
 										if (ss==B_OK && num>0){ 
 											//debug<<"readdir success\n";debug.flush();
 											//printf("dirent: %s, len=%i, ino=%i\n",d.d_name,d.d_reclen,d.d_ino);
@@ -639,8 +641,8 @@ BOOL CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 								debug<<"\tInode size: "<<II->Size()<<endl;debug.flush();
 								if (II->IsDirectory()){ 
 									debug<<"Level "<<td->level<<" directory, listing contents\n";debug.flush();
-									skyfs_open_dir(vol, II, &iter);
-									status_t s1 = skyfs_read_dir(vol, II, iter, &d,sizeof(dirent), &num2);
+									bfs_open_dir(vol, II, &iter);
+									status_t s1 = bfs_read_dir(vol, II, iter, &d,sizeof(dirent), &num2);
 									Inode* ii = new Inode(vol,d.d_ino);
 									if (s1==B_OK && num2>0 && ii->IsDirectory()){ 
 										//printf("\t%s (directory,%I64d)\n",dd.d_name,dd.d_ino);
@@ -665,7 +667,7 @@ BOOL CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 									}
 									free(ii);
 									while (s1==B_OK && num2>0){
-										s1 = skyfs_read_dir(vol, II, iter, &d,sizeof(dirent), &num2);
+										s1 = bfs_read_dir(vol, II, iter, &d,sizeof(dirent), &num2);
 										ii = new Inode(vol,d.d_ino);
 										if (s1==B_OK && num2>0 && ii->IsDirectory()){ 
 											//printf("\t%s (directory,%I64d)\n",dd.d_name,dd.d_ino);
@@ -690,7 +692,7 @@ BOOL CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 										}
 										free(ii);
 									}
-									skyfs_close_dir(vol, II, &iter);
+									bfs_close_dir(vol, II, &iter);
 								}
 								free(II);
 								* /
@@ -875,9 +877,9 @@ BOOL CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 									Inode *I;
 									void *f; // file_cookie
 									file_cookie ff;
-									//printf("skyfs_read_vnode result: %i\n",skyfs_read_vnode(v,135901,(void**)&I,true /*not used*/));
-									debug<<"skyfs_read_vnode result: "<<skyfs_read_vnode(vol,td->inode,(void**)&I,true /*not used*/)<<endl;
-									debug<<"open status: "<<skyfs_open(vol,I,O_RDONLY,&f)<<endl;;
+									//printf("bfs_read_vnode result: %i\n",bfs_read_vnode(v,135901,(void**)&I,true /*not used*/));
+									debug<<"bfs_read_vnode result: "<<bfs_read_vnode(vol,td->inode,(void**)&I,true /*not used*/)<<endl;
+									debug<<"open status: "<<bfs_open(vol,I,O_RDONLY,&f)<<endl;;
 									memcpy(&ff,f,sizeof(file_cookie));
 									debug<<"filesize: "<<ff.last_size<<endl;
 									off_t BytesTotal = ff.last_size;
@@ -898,7 +900,7 @@ BOOL CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 										// read block
 										//debug<<"at the start of while\n"; debug.flush();
 										//debug<<"reading "<<block<<" bytes at offset "<<offset<<", result: "<<
-										skyfs_read(vol,I,f,offset,q,&block);
+										bfs_read(vol,I,f,offset,q,&block);
 										//<<endl;
 										if (file.is_open()) {
 											//debug<<"file is open\n";
@@ -917,7 +919,7 @@ BOOL CALLBACK DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 									}
 									debug << "file copy done\n";
 									file.close();
-									skyfs_close(vol,I,&ff);
+									bfs_close(vol,I,&ff);
 									free(I);
 									ostringstream oss;
 									oss << "File copied to local directory: " << td->name<<" ("<<BytesWritten<<"/"<<BytesTotal<<" bytes)";
