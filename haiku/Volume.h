@@ -85,7 +85,7 @@ class Volume {
 		// next 3 will be removed
 		status_t			Mount(const char *device, int partitionNr, uint32 flags);
 		status_t			MountBFS(const char *deviceName, int partitionNr, uint32 flags);
-		int					CountSkyfsPartitions(const char* device, bool bfs);
+//		int					CountSkyfsPartitions(const char* device, bool bfs);
 		// till here
 		status_t			Unmount();
 		status_t			Initialize(const char *device, const char *name,

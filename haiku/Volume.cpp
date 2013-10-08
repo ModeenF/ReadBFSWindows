@@ -1433,6 +1433,7 @@ printf("Mount:RootNode\n============================\n");
 	printf("Mounting bfs done\n");
 	return status;
 }
+/*
 int Volume::CountSkyfsPartitions(const char* DRIVE,bool bfs){
 	int i,nRet,count=0;
 	DWORD dwBytes;
@@ -1448,38 +1449,12 @@ int Volume::CountSkyfsPartitions(const char* DRIVE,bool bfs){
 	DWORD dwPrevRelSector =0;
 
 	HANDLE hDrive = CreateFile(DRIVE,GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE,0,OPEN_EXISTING,0,0);
-	/*
-	Status = NtCreateFile(&FileHandle,                      // returned file handle
-                          //(GENERIC_WRITE | SYNCHRONIZE),    // desired access
-						  FILE_READ_DATA | SYNCHRONIZE,		// desired access
-                          &ObjectAttributes,                // ptr to object attributes
-                          &Iosb,                            // ptr to I/O status block
-                          NULL,                             // allocation size
-                          FILE_ATTRIBUTE_NORMAL,            // file attributes
-                          FILE_SHARE_READ | FILE_SHARE_WRITE,// share access (was 0)
-                          //FILE_SUPERSEDE,                   // create disposition
-						  FILE_OPEN,
-                          FILE_SYNCHRONOUS_IO_NONALERT,     // create options
-                          NULL,                             // ptr to extended attributes
-                          0);                               // length of ea buffer
-	*/
 	if(hDrive == INVALID_HANDLE_VALUE){
 		printf("ScanPartitions: CreateFile error: %i\n",GetLastError());
 		return GetLastError();
 	}
 
 	nRet = ReadFile(hDrive,szSector,512,&dwBytes,0);
-	/*
-	Status = NtReadFile(FileHandle,	// file Handle
-			0,		// event Handle
-			NULL,	// APC entry point
-			NULL,	// APC context
-			&Iosb,	// IOSB address
-			q,//Message,// ptr to data buffer
-			1024,	// length
-			0,		// byte offset
-			NULL);	// key
-	*/
 	if(!nRet){
 		printf("ScanPartitions: ReadFile error: %i\n",GetLastError());
 		return GetLastError();
@@ -1579,17 +1554,7 @@ int Volume::CountSkyfsPartitions(const char* DRIVE,bool bfs){
 			dwBytes = 0;
 
 			nRet = ReadFile(hDrive, szSector, 512, (DWORD *) &dwBytes, NULL);
-			/*
-	Status = NtReadFile(FileHandle,	// file Handle
-			0,		// event Handle
-			NULL,	// APC entry point
-			NULL,	// APC context
-			&Iosb,	// IOSB address
-			q,//Message,// ptr to data buffer
-			1024,	// length
-			0,		// byte offset
-			NULL);	// key
-	*/
+
 			if(!nRet)
 				return GetLastError();
 
@@ -1675,9 +1640,10 @@ int Volume::CountSkyfsPartitions(const char* DRIVE,bool bfs){
 
 	CloseHandle(hDrive);
 	//NtClose(hDrive);
-	/*Status = NtClose(FileHandle);*/
+	//Status = NtClose(FileHandle);
 	return count;
 }
+*/
 status_t
 Volume::Unmount()
 {

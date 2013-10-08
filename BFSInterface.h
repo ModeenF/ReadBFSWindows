@@ -7,9 +7,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef SKYFSINTERFACE_H
-#define SKYFSINTERFACE_H
-
+#ifndef BFSINTERFACE_H
+#define BFSINTERFACE_H
 
 #include "haiku/system_dependencies.h"
 #include "haiku/Attribute.h" //for struct attr_cookie

@@ -202,7 +202,7 @@ struct bfs_inode {
 #ifndef WIN32	
 	small_data *SmallDataStart() { return small_data_start; }
 #else
-	small_data *SmallDataStart(){ return (small_data *)(&pad[4]);};
+	small_data *SmallDataStart() { return (small_data *)(&pad[4]);};
 #endif // WIN32
 
 	status_t InitCheck(Volume *volume);

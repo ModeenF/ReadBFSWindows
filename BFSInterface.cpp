@@ -1,11 +1,11 @@
 /* Author: Peter Speybrouck - peter.speybrouck@gmail.com
- * ----------------------------------------------------------------------------
- * "THE BEER-WARE LICENSE" (Revision 42):
- * <phk@FreeBSD.ORG> wrote this file. As long as you retain this notice you
- * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return. Poul-Henning Kamp
- * ----------------------------------------------------------------------------
- */
+*  ----------------------------------------------------------------------------
+*  "THE BEER-WARE LICENSE" (Revision 42):
+*  <phk@FreeBSD.ORG> wrote this file. As long as you retain this notice you
+*  can do whatever you want with this stuff. If we meet some day, and you think
+*  this stuff is worth it, you can buy me a beer in return. Poul-Henning Kamp
+*  ----------------------------------------------------------------------------
+*/
 
 #define _CRT_SECURE_NO_DEPRECATE 1
 
@@ -15,20 +15,19 @@
 #include "haiku/Volume.h"
 #include "haiku/BPlusTree.h"
 
-/**	Opens a directory ready to be traversed.
- *	bfs_open_dir() is also used by bfs_open_index_dir().
- */
-
+//	Opens a directory ready to be traversed.
+//	bfs_open_dir() is also used by bfs_open_index_dir().
 
 //static 
-status_t bfs_open_dir(void *_ns, void *_node, void **_cookie)
+status_t
+bfs_open_dir(void* _ns, void* _node, void** _cookie)
 {
 	//FUNCTION();
 	
 	if (_ns == NULL || _node == NULL || _cookie == NULL)
 		RETURN_ERROR(B_BAD_VALUE);
 	
-	Inode *inode = (Inode *)_node;
+	Inode* inode = (Inode*)_node;
 	
 	
 	status_t status = inode->CheckPermissions(R_OK);
@@ -38,16 +37,17 @@ status_t bfs_open_dir(void *_ns, void *_node, void **_cookie)
 	
 	// we don't ask here for directories only, because the bfs_open_index_dir()
 	// function utilizes us (so we must be able to open indices as well)
-	if (!inode->IsContainer()){
-		printf("inode->IsContainer()=%i\n",inode->IsContainer());
+	if (!inode->IsContainer()) {
+		printf("inode->IsContainer() = %i\n", inode->IsContainer());
 		RETURN_ERROR(B_BAD_VALUE);
 	}
-	BPlusTree *tree;
+
+	BPlusTree* tree;
 	if (inode->GetTree(&tree) != B_OK)
 		RETURN_ERROR(B_BAD_VALUE);
 	
 	//dump_bplustree_header(tree->Header());
-	TreeIterator *iterator = new TreeIterator(tree);
+	TreeIterator* iterator = new TreeIterator(tree);
 	
 	if (iterator == NULL)
 		RETURN_ERROR(B_NO_MEMORY);
@@ -56,13 +56,14 @@ status_t bfs_open_dir(void *_ns, void *_node, void **_cookie)
 	return B_OK;
 }
 
+
 //static 
 status_t
-bfs_read_dir(void *_ns, void *_node, void *_cookie, struct dirent *Dirent, 
-	size_t bufferSize, uint32 *_num)
+bfs_read_dir(void* _ns, void* _node, void* _cookie, struct dirent* Dirent, 
+	size_t bufferSize, uint32* _num)
 {
 	//FUNCTION();
-	TreeIterator *iterator = (TreeIterator *)_cookie;
+	TreeIterator* iterator = (TreeIterator* )_cookie;
 	if (iterator == NULL)
 		RETURN_ERROR(B_BAD_VALUE);
 	//iterator->Dump();
@@ -77,7 +78,7 @@ bfs_read_dir(void *_ns, void *_node, void *_cookie, struct dirent *Dirent,
 		RETURN_ERROR(status);
 	
 	
-	Volume *volume = (Volume *)_ns;
+	Volume* volume = (Volume* )_ns;
 	
 	Dirent->d_dev = volume->ID();
 	Dirent->d_ino = id;
@@ -89,11 +90,12 @@ bfs_read_dir(void *_ns, void *_node, void *_cookie, struct dirent *Dirent,
 	return B_OK;
 }
 
+
 status_t
-bfs_rewind_dir(void * ns, void * node, void *_cookie)
+bfs_rewind_dir(void*  ns, void*  node, void* _cookie)
 {
 	FUNCTION();
-	TreeIterator *iterator = (TreeIterator *)_cookie;
+	TreeIterator* iterator = (TreeIterator* )_cookie;
 
 	if (iterator == NULL)
 		RETURN_ERROR(B_BAD_VALUE);
@@ -102,17 +104,16 @@ bfs_rewind_dir(void * ns, void * node, void *_cookie)
 }
 
 
-/**	Opens the file with the specified mode.
- */
+//Opens the file with the specified mode.
 
 //static 
 status_t
-bfs_open(void *_fs, void *_node, int openMode, void **_cookie)
+bfs_open(void* _fs, void* _node, int openMode, void** _cookie)
 {
 	FUNCTION();
 
-	Volume *volume = (Volume *)_fs;
-	Inode *inode = (Inode *)_node;
+	Volume* volume = (Volume* )_fs;
+	Inode* inode = (Inode* )_node;
 #ifdef DEBUG
 	dump_inode(&(inode->Node()));
 #endif
@@ -138,7 +139,7 @@ bfs_open(void *_fs, void *_node, int openMode, void **_cookie)
 	// This could greatly speed up continuous reads of big files, especially
 	// in the indirect block section.
 
-	file_cookie *cookie = (file_cookie *)malloc(sizeof(file_cookie));
+	file_cookie* cookie = (file_cookie* )malloc(sizeof(file_cookie));
 	if (cookie == NULL)
 		RETURN_ERROR(B_NO_MEMORY); 
 
@@ -149,8 +150,8 @@ bfs_open(void *_fs, void *_node, int openMode, void **_cookie)
 	
 	//SYSTEMTIME st;
 	FILETIME ft;
-	//GetSystemTime(&st);              // gets current time
-    //SystemTimeToFileTime(&st, &ft);  // converts to file time format
+	//GetSystemTime(&st);			  // gets current time
+	//SystemTimeToFileTime(&st, &ft);  // converts to file time format
 	//cookie->last_notification = system_time();
 	GetSystemTimeAsFileTime(&ft);
 	LARGE_INTEGER li;
@@ -181,17 +182,17 @@ bfs_open(void *_fs, void *_node, int openMode, void **_cookie)
 	return B_OK;
 }
 
-/**	Read a file specified by node, using information in cookie
- *	and at offset specified by pos. read len bytes into buffer buf.
- */
+
+//	Read a file specified by node, using information in cookie
+//	and at offset specified by pos. read len bytes into buffer buf.
 
 //static 
 status_t
-bfs_read(void *_ns, void *_node, void *_cookie, off_t pos, void *buffer, off_t *_length)
+bfs_read(void* _ns, void* _node, void* _cookie, off_t pos, void* buffer, off_t* _length)
 {
 	// not used: _ns, _cookie
 	//FUNCTION();
-	Inode *inode = (Inode *)_node;
+	Inode* inode = (Inode* )_node;
 
 	if (!inode->HasUserAccessableStream()) {
 		*_length = 0;
@@ -199,23 +200,22 @@ bfs_read(void *_ns, void *_node, void *_cookie, off_t pos, void *buffer, off_t *
 	}
 
 	ReadLocked locked(inode->Lock());
-	return inode->ReadAt(pos, (uint8 *)buffer, _length);
+	return inode->ReadAt(pos, (uint8* )buffer, _length);
 }
 
+
 status_t
-bfs_close_dir(void * /*ns*/, void * /*node*/, void * /*_cookie*/)
+bfs_close_dir(void*  /*ns*/, void*  /*node*/, void*  /*_cookie*/)
 {
 	FUNCTION();
 	// Do whatever you need to to close a directory, but DON'T free the cookie!
 	return B_OK;
 }
 
-/**	Do whatever is necessary to close a file, EXCEPT for freeing
- *	the cookie!
- */
-
+//	Do whatever is necessary to close a file, EXCEPT for freeing
+//	the cookie!
 status_t
-bfs_close(void *_ns, void *_node, void *_cookie)
+bfs_close(void* _ns, void* _node, void* _cookie)
 {
 	FUNCTION();
 	if (_ns == NULL || _node == NULL || _cookie == NULL)
@@ -224,13 +224,13 @@ bfs_close(void *_ns, void *_node, void *_cookie)
 	return B_OK;
 }
 
-/**	Reads in the node from disk and creates an inode object from it.
- */
 
-status_t bfs_read_vnode(void *_ns, vnode_id id, void **_node, bool reenter)
+//	Reads in the node from disk and creates an inode object from it.
+status_t
+bfs_read_vnode(void* _ns, vnode_id id, void* *_node, bool reenter)
 {
 	//FUNCTION_START(("vnode_id = %Ld\n", id));
-	Volume *volume = (Volume *)_ns;
+	Volume* volume = (Volume* )_ns;
 
 	// first inode may be after the log area, we don't go through
 	// the hassle and try to load an earlier block from disk
@@ -241,7 +241,7 @@ status_t bfs_read_vnode(void *_ns, vnode_id id, void **_node, bool reenter)
 	}
 
 	CachedBlock cached(volume, id);
-	bfs_inode *node = (bfs_inode *)cached.Block();
+	bfs_inode* node = (bfs_inode* )cached.Block();
 	if (node == NULL) {
 		FATAL(("could not read inode: %Ld\n", id));
 		return B_IO_ERROR;
@@ -253,7 +253,7 @@ status_t bfs_read_vnode(void *_ns, vnode_id id, void **_node, bool reenter)
 		return status;
 	}
 
-	Inode *inode = new Inode(volume, id);
+	Inode* inode = new Inode(volume, id);
 	if (inode == NULL)
 		return B_NO_MEMORY;
 
@@ -267,30 +267,30 @@ status_t bfs_read_vnode(void *_ns, vnode_id id, void **_node, bool reenter)
 	return status;
 }
 
-/**	the walk function just "walks" through a directory looking for the
- *	specified file. It calls get_vnode() on its vnode-id to init it
- *	for the kernel.
- */
 
-status_t bfs_lookup(void *_ns, void *_directory, const char *file, vnode_id *_vnodeID, int *_type)
+//	the walk function just "walks" through a directory looking for the
+// 	specified file. It calls get_vnode() on its vnode-id to init it	for the kernel.
+
+status_t
+bfs_lookup(void* _ns, void* _directory, const char* file, vnode_id* _vnodeID, int* _type)
 {
 	FUNCTION_START(("file = %s\n", file));
 	if (_ns == NULL || _directory == NULL || file == NULL || _vnodeID == NULL)
 		return B_BAD_VALUE;
 
-	Volume *volume = (Volume *)_ns;
-	Inode *directory = (Inode *)_directory;
+	Volume* volume = (Volume* )_ns;
+	Inode* directory = (Inode* )_directory;
 
 	// check access permissions
 	status_t status = directory->CheckPermissions(X_OK);
 	if (status < B_OK)
 		RETURN_ERROR(status);
 
-	BPlusTree *tree;
+	BPlusTree* tree;
 	if (directory->GetTree(&tree) != B_OK)
 		RETURN_ERROR(B_BAD_VALUE);
 
-	if ((status = tree->Find((uint8 *)file, (uint16)strlen(file), _vnodeID)) < B_OK) {
+	if ((status = tree->Find((uint8* )file, (uint16)strlen(file), _vnodeID)) < B_OK) {
 		PRINT(("bfs_walk() could not find %I64d:\"%s\": %s\n", directory->BlockNumber(), file, strerror(status)));
 		return status;
 	}
@@ -299,8 +299,8 @@ status_t bfs_lookup(void *_ns, void *_directory, const char *file, vnode_id *_vn
 		// we have to hold the volume lock in order to not
 		// interfere with new_vnode() here
 
-	Inode *inode;
-	if ((status = get_vnode(volume->ID(), *_vnodeID, (void **)&inode)) != B_OK) {
+	Inode* inode;
+	if ((status = get_vnode(volume->ID(),* _vnodeID, (void* *)&inode)) != B_OK) {
 		REPORT_ERROR(status);
 		return B_ENTRY_NOT_FOUND;
 	}
@@ -310,23 +310,25 @@ status_t bfs_lookup(void *_ns, void *_directory, const char *file, vnode_id *_vn
 	return B_OK;
 }
 
-status_t bfs_get_vnode_name(void* _fs, fs_vnode _node, char *buffer, size_t bufferSize)
+
+status_t
+bfs_get_vnode_name(void* _fs, fs_vnode _node, char* buffer, size_t bufferSize)
 {
-	Inode *inode = (Inode *)_node;
+	Inode* inode = (Inode* )_node;
 
 	return inode->GetName(buffer, bufferSize);
 }
 
+
 //	Attribute functions
-
-
-status_t bfs_open_attr_dir(void *_ns, void *_node, void **_cookie)
+status_t
+bfs_open_attr_dir(void* _ns, void* _node, void* *_cookie)
 {
-	Inode *inode = (Inode *)_node;
+	Inode* inode = (Inode* )_node;
 
 	//FUNCTION();
 
-	AttributeIterator *iterator = new AttributeIterator(inode);
+	AttributeIterator* iterator = new AttributeIterator(inode);
 	if (iterator == NULL)
 		RETURN_ERROR(B_NO_MEMORY);
 
@@ -334,28 +336,34 @@ status_t bfs_open_attr_dir(void *_ns, void *_node, void **_cookie)
 	return B_OK;
 }
 
-status_t bfs_close_attr_dir(void *ns, void *node, void *cookie)
+
+status_t
+bfs_close_attr_dir(void* ns, void* node, void* cookie)
 {
 	//FUNCTION();
 	return B_OK;
 }
 
-status_t bfs_rewind_attr_dir(void *_ns, void *_node, void *_cookie)
+
+status_t
+bfs_rewind_attr_dir(void* _ns, void* _node, void* _cookie)
 {
 	//FUNCTION();
 	
-	AttributeIterator *iterator = (AttributeIterator *)_cookie;
+	AttributeIterator* iterator = (AttributeIterator* )_cookie;
 	if (iterator == NULL)
 		RETURN_ERROR(B_BAD_VALUE);
 
 	RETURN_ERROR(iterator->Rewind());
 }
 
-status_t bfs_read_attr_dir(void *_ns, void *node, void *_cookie, struct dirent *dirent,
-	size_t bufferSize, uint32 *_num)
+
+status_t
+bfs_read_attr_dir(void* _ns, void* node, void* _cookie, struct dirent* dirent,
+	size_t bufferSize, uint32* _num)
 {
 	//FUNCTION();
-	AttributeIterator *iterator = (AttributeIterator *)_cookie;
+	AttributeIterator* iterator = (AttributeIterator* )_cookie;
 
 	if (iterator == NULL)
 		RETURN_ERROR(B_BAD_VALUE);
@@ -370,7 +378,7 @@ status_t bfs_read_attr_dir(void *_ns, void *node, void *_cookie, struct dirent *
 		RETURN_ERROR(status);
 	}
 
-	Volume *volume = (Volume *)_ns;
+	Volume* volume = (Volume* )_ns;
 
 	dirent->d_dev = volume->ID();
 	dirent->d_reclen = sizeof(struct dirent) + length;
@@ -379,43 +387,50 @@ status_t bfs_read_attr_dir(void *_ns, void *node, void *_cookie, struct dirent *
 	return B_OK;
 }
 
-status_t bfs_open_attr(void* _fs, fs_vnode _node, const char *name, int openMode, void *_cookie)
+
+status_t
+bfs_open_attr(void* _fs, fs_vnode _node, const char* name, int openMode, void* _cookie)
 {
 	//FUNCTION();
 
-	Inode *inode = (Inode *)_node;
+	Inode* inode = (Inode* )_node;
 	Attribute attribute(inode);
 
-	return attribute.Open(name, openMode, (attr_cookie **)_cookie);
+	return attribute.Open(name, openMode, (attr_cookie* *)_cookie);
 }
 
-status_t bfs_close_attr(void* _fs, fs_vnode _file, attr_cookie* cookie)
+
+status_t
+bfs_close_attr(void* _fs, fs_vnode _file, attr_cookie* cookie)
 {
 	return B_OK;
 }
 
-status_t bfs_read_attr(void* _fs, fs_vnode _file, attr_cookie* _cookie, off_t pos,
-	void *buffer, off_t *_length)
+
+status_t
+bfs_read_attr(void* _fs, fs_vnode _file, attr_cookie* _cookie, off_t pos,
+	void* buffer, off_t* _length)
 {
 	//FUNCTION();
 
-	attr_cookie *cookie = _cookie;
-	Inode *inode = (Inode *)_file;
+	attr_cookie* cookie = _cookie;
+	Inode* inode = (Inode* )_file;
 
 	Attribute attribute(inode, cookie);
 
-	return attribute.Read(cookie, pos, (uint8 *)buffer, _length);
+	return attribute.Read(cookie, pos, (uint8* )buffer, _length);
 }
 
-status_t bfs_read_attr_stat(void* _fs, fs_vnode _file, attr_cookie* _cookie, struct attr_stat *stat)
+
+status_t
+bfs_read_attr_stat(void* _fs, fs_vnode _file, attr_cookie* _cookie, struct attr_stat* stat)
 {
 	//FUNCTION();
 
-	attr_cookie *cookie = (attr_cookie *)_cookie;
-	Inode *inode = (Inode *)_file;
+	attr_cookie* cookie = (attr_cookie* )_cookie;
+	Inode* inode = (Inode* )_file;
 
 	Attribute attribute(inode, cookie);
 
 	return attribute.Stat(*stat);
 }
-
