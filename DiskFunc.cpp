@@ -191,6 +191,8 @@ listPartitions(int disk, HWND h, HTREEITEM* node, TV_INSERTSTRUCT* s, std::ofstr
 	DRIVEPACKET stDrive;
 
 	BYTE szSector[512];
+//	char szSector[512];
+
 	WORD wDrive = 0;
 
 	char szTmpStr[64];
@@ -200,19 +202,18 @@ listPartitions(int disk, HWND h, HTREEITEM* node, TV_INSERTSTRUCT* s, std::ofstr
 	char drive[60];
 	sprintf(drive, PHYSICALDRIVE, disk);
 	*debug << "DRIVE = " << drive << endl;
-	HANDLE hDrive = CreateFile(drive, NULL, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
-	
+	HANDLE hDrive = CreateFile(drive, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
+
 	if (hDrive == INVALID_HANDLE_VALUE) {
-		printf("\tError in listPartitions: could not open disk %i (error %i)\n", disk, GetLastErrorText(GetLastError()));
-		*debug<<"Error in listPartitions: could not open disk " << disk << ", error " << GetLastErrorText(GetLastError()) << endl;
+		printf("\tError in listPartitions: could not open disk %i (error id %i, %s)\n", disk, GetLastError(), GetLastErrorText(GetLastError()));
+		*debug<<"Error in listPartitions: could not open disk " << disk << ", error id " << GetLastError << ", " << GetLastErrorText(GetLastError()) << endl;
 		return GetLastError();
 	}
 
-// error are here..
-	int nRet = ReadFile(hDrive, szSector, 512, &dwBytes, 0);
+	int nRet = ReadFile(hDrive, szSector, 512, &dwBytes ,NULL);
 	
 	if (!nRet) {
-		printf("\tRead error in listPartitions: %i\n",GetLastErrorText(GetLastError()));
+		printf("\tRead error in listPartitions: id %i %s\n", GetLastError, GetLastErrorText(GetLastError()));
 		*debug << "Read error in listPartitions: " << GetLastErrorText(GetLastError()) << endl;
 		return GetLastError();
 	}
@@ -220,9 +221,11 @@ listPartitions(int disk, HWND h, HTREEITEM* node, TV_INSERTSTRUCT* s, std::ofstr
 	dwPrevRelSector = 0;
 	dwMainPrevRelSector = 0;
 
-	PartitionTbl = (PARTITION*)(szSector+0x1BE); //0x1be=446
+	PartitionTbl = (PARTITION*)(szSector + 0x1BE); //0x1be=446
 
-	for (i = 0; i < 4; i++) { /// scanning partitions in the physical disk
+	int nr_of_Loops = 4;
+
+	for (i = 0; i < nr_of_Loops; i++) { /// scanning partitions in the physical disk
 		stDrive.wCylinder = PartitionTbl->chCylinder;
 		stDrive.wHead = PartitionTbl->chHead;
 		stDrive.wSector = PartitionTbl->chSector;
@@ -268,7 +271,7 @@ listPartitions(int disk, HWND h, HTREEITEM* node, TV_INSERTSTRUCT* s, std::ofstr
 			case PART_SKYFS:
 			{
 				strcpy(szTmpStr, "SKYFS");	//skyfs partition
-/*				s->hParent=*node;
+				s->hParent=*node;
 				s->item.mask=TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE| TVIF_PARAM;
 				s->item.lParam= 0;
 				ostringstream oss;
@@ -281,7 +284,7 @@ listPartitions(int disk, HWND h, HTREEITEM* node, TV_INSERTSTRUCT* s, std::ofstr
 				oss << " ("<< szTmpStr<< ")";
 				t = oss.str();
 				s->item.pszText=(LPTSTR)(LPCTSTR)t.c_str();
-				SendDlgItemMessage(h,IDC_TREE1,TVM_INSERTITEM,0,(LPARAM)s);*/
+				SendDlgItemMessage(h,IDC_TREE1,TVM_INSERTITEM,0,(LPARAM)s);
 			}
 				break;
 			case PART_BFS:
@@ -333,7 +336,7 @@ listPartitions(int disk, HWND h, HTREEITEM* node, TV_INSERTSTRUCT* s, std::ofstr
 		wDrive++;
 	}
 
-	if (i == 4)
+	if (i == nr_of_Loops)
 		return ERROR_SUCCESS;
 
 	for (int LogiHard = 0; LogiHard < 50; LogiHard++) { // scanning extended partitions
@@ -359,7 +362,7 @@ listPartitions(int disk, HWND h, HTREEITEM* node, TV_INSERTSTRUCT* s, std::ofstr
 			
 			PartitionTbl = (PARTITION* ) (szSector+0x1BE);
 
-			for (i = 0; i < 4; i++) {
+			for (i = 0; i < nr_of_Loops; i++) {
 				stDrive.wCylinder = PartitionTbl->chCylinder;
 				stDrive.wHead = PartitionTbl->chHead;
 				stDrive.dwNumSectors = PartitionTbl->dwNumberSectors;
@@ -409,7 +412,7 @@ listPartitions(int disk, HWND h, HTREEITEM* node, TV_INSERTSTRUCT* s, std::ofstr
 				case PART_SKYFS:
 				{
 					strcpy(szTmpStr, "SKYFS");	//skyfs partition
-/*					s->hParent=*node;
+					s->hParent=*node;
 					s->item.mask=TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE| TVIF_PARAM;
 					s->item.lParam= 0;
 					ostringstream oss;
@@ -422,7 +425,7 @@ listPartitions(int disk, HWND h, HTREEITEM* node, TV_INSERTSTRUCT* s, std::ofstr
 					oss << " ("<< szTmpStr<< ")";
 					t = oss.str();
 					s->item.pszText=(LPTSTR)(LPCTSTR)t.c_str();
-					SendDlgItemMessage(h,IDC_TREE1,TVM_INSERTITEM,0,(LPARAM)s);*/
+					SendDlgItemMessage(h,IDC_TREE1,TVM_INSERTITEM,0,(LPARAM)s);
 				}
 					break;
 				case PART_BFS:
@@ -473,7 +476,7 @@ listPartitions(int disk, HWND h, HTREEITEM* node, TV_INSERTSTRUCT* s, std::ofstr
 				wDrive++;
 			}
 
-			if (i == 4)
+			if (i == nr_of_Loops)
 				break;
 		}
 	}

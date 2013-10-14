@@ -514,8 +514,8 @@ DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				NMTREEVIEW*  pnmtv = (LPNMTREEVIEW) lParam;
 				TreeData* td1 = reinterpret_cast<TreeData*>(pnmtv->itemOld.lParam);
 				TreeData* td2 = reinterpret_cast<TreeData*>(pnmtv->itemNew.lParam);
-				//debug<<"TVN_SELCHANGING, old: "<<pnmtv->itemOld.hItem<<endl;
-				//debug<<"TVN_SELCHANGING, new: "<<pnmtv->itemNew.hItem<<endl;
+				debug<<"TVN_SELCHANGING, old: "<<pnmtv->itemOld.hItem<<endl;
+				debug<<"TVN_SELCHANGING, new: "<<pnmtv->itemNew.hItem<<endl;
 				char Text[255] = "";
 				memset(&tvi, 0, sizeof(tvi));
 				tvi.mask = TVIF_TEXT|TVIF_PARAM|TVIF_CHILDREN;
@@ -525,7 +525,7 @@ DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				TreeView_GetItem(hTree, &tvi);
 				TreeData* td = reinterpret_cast<TreeData*>(tvi.lParam);
 				debug << "TVN_SELCHANGING, name: " << Text << "  " << td->inode << "  " << td->volume << endl;
-				if (td->level>1) {
+				if (td->level > 1) {
 					if (tvi.cChildren == 0) {
 						listDir(hTree, &tvi.hItem, &tvi, &debug, &volumes);
 					}
@@ -560,7 +560,8 @@ DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				tvi.cchTextMax = 256;
 				tvi.hItem = Selected;
 				
-				/*
+				debug << "If the program get's here wee need to look at this code.." << endl;
+				/*Was coment out
 				if (SendDlgItemMessage(hWnd,IDC_TREE1,TVM_GETITEM,TVGN_CARET,(LPARAM)&tvi))
 				{
 					TreeData* td = reinterpret_cast<TreeData*>(tvi.lParam);
@@ -635,17 +636,20 @@ DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 							// we're somewhere in the partition, 
 							// if dir, list contents, else do nothing
 							// if has children, do nothing
-							debug<<"somewhere in the partition,   volume="<<td->extra<<"   hWnd="<<hWnd<<endl;
-							//Volume* vol=(Volume*)td->extra;
-							if (tvi.cChildren== 0) {
-								//hTree=GetDlgItem(hWnd,IDC_TREE1);
-								//listDir(hWnd, &Selected, &tvi, &debug,&volumes);
-								//Inode* II = new Inode(vol,td->inode);
-								//debug<<"\tInode size: "<<II->Size()<<endl;debug.flush();
-								//if (II->IsDirectory())
-//								listDir(hTree, &Selected, &tvi, &debug,&volumes);
-								/* debug<<"checking node type, inode="<<td->inode<<"  volume="<<vol<<endl;debug.flush();
+							debug << "somewhere in the partition, volume = " << td->extra << " hWnd = " << hWnd << endl;
+							Volume* vol = (Volume*)td->extra;
+							if (tvi.cChildren == 0) {
+								hTree=GetDlgItem(hWnd,IDC_TREE1);
+								listDir(hWnd, &Selected, &tvi, &debug,&volumes);
+								Inode* II = new Inode(vol,td->inode);
+								debug<<"\tInode size: "<<II->Size()<<endl;debug.flush();
 								
+								if (II->IsDirectory())
+									listDir(hTree, &Selected, &tvi, &debug,&volumes);
+								
+								debug<<"checking node type, inode="<<td->inode<<"  volume="<<vol<<endl;debug.flush();
+								
+
 								debug<<"\tInode size: "<<II->Size()<<endl;debug.flush();
 								if (II->IsDirectory()) { 
 									debug<<"Level "<<td->level<<" directory, listing contents\n";debug.flush();
@@ -706,11 +710,12 @@ DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 							}
 						}   
 					}
-				}*/
+				}*///Was coment out end..
 				break;
 			}
 			if (((LPNMHDR)lParam)->code == TVN_GETINFOTIP) // if code == NM_CLICK - Single click on an item
 			{
+				debug << "If the program get's here wee need to look at this code.. nr 2" << endl;
 				/*debug<<"infotip\n";
 				debug.flush();
 				LPNMTVGETINFOTIP pTip = (LPNMTVGETINFOTIP)lParam;
@@ -985,6 +990,10 @@ DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				break;	
 				*/
+				default: { 
+					debug << "1 Some other switch value " << LOWORD(wParam) << endl;
+				} break;
+
 			}
 			break;
 
@@ -993,6 +1002,9 @@ DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				EndDialog(hWnd, 0); 
 			}
 			break;
+			default: { 
+				debug << "2 Some other switch value " << message << endl;
+			} break;
 		}
 		break;
 	}
@@ -1116,7 +1128,10 @@ AboutDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				EndDialog(hWnd, 0); 
 			}
 			break;
-		}
+					
+			default: { 
+				debug << "3 Some other switch value "  << endl;
+			} break;		}
 	}
 	return 0;
 }
